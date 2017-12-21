@@ -34,6 +34,10 @@
 							<mainClass>data.streaming.test.TestFlinkKafkaConsumer</mainClass>
 							<name>consumer</name>
 						</program>
+						<program>
+							<mainClass>data.streaming.test.TestFlinkKafkaBatch</mainClass>
+							<name>batch</name>
+						</program>
 					</programs>
 				</configuration>
 				<executions>
