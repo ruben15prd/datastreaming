@@ -7,15 +7,18 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.apache.flink.shaded.com.google.common.collect.Maps;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.Recommender;
@@ -182,6 +185,117 @@ public class Utils {
 		return result;
 	}
 	
+	
+	public static void interseccionPatentes() {
+
+		// Creating a Mongo client
+		MongoClientURI uri = new MongoClientURI("mongodb://rrv:rrv@ds255455.mlab.com:55455/si1718-rrv-patents");
+		MongoClient client = new MongoClient(uri);
+
+		MongoDatabase db = client.getDatabase(uri.getDatabase());
+
+		MongoCollection<Document> patentsAux = db.getCollection("patentsAux");
+		
+		MongoCollection<Document> patents = db.getCollection("patents");
+		
+		
+		Set<Document> patsAux = (Set<Document>) patentsAux.find().into(new HashSet<Document>());
+		
+		Set<Document> pats = (Set<Document>) patents.find().into(new HashSet<Document>());
+		
+		Set<Document> newPatents = new HashSet<Document>();
+		List<Document> listNewPatents = new ArrayList<Document>();
+		
+		
+		
+		
+		newPatents = Utils.difference(patsAux, pats);
+		
+		
+		
+		listNewPatents.addAll(newPatents);
+		
+		Bson filter4 = new Document();
+		patentsAux.deleteMany(filter4);
+		System.out.println("------------------------------------------------------");
+		System.out.println("Hacemos la diferencia de las patentes");
+
+		patentsAux.insertMany(listNewPatents);
+		System.out.println("Hecho");
+		client.close();
+
+	}
+	
+	
+	public static void sistemaRecomendacion() {
+
+		// Creating a Mongo client
+		MongoClientURI uri = new MongoClientURI("mongodb://rrv:rrv@ds255455.mlab.com:55455/si1718-rrv-patents");
+
+		MongoClient client = new MongoClient(uri);
+
+		MongoDatabase db = client.getDatabase(uri.getDatabase());
+
+		MongoCollection<Document> ratings = db.getCollection("ratings");
+
+		MongoCollection<Document> recomendationsBd = db.getCollection("recomendations");
+
+		List<Document> ratingDocuments2 = (List<Document>) ratings.find().into(new ArrayList<Document>());
+
+		Set<PatentePatenteRating> ratings2 = new HashSet<PatentePatenteRating>();
+
+		for (Document d : ratingDocuments2) {
+			String patent1Str = (String) d.get("patent1");
+			String patent2Str = (String) d.get("patent2");
+			Integer ratingInt = (Integer) d.get("rating");
+
+			ratings2.add(new PatentePatenteRating(patent1Str, patent2Str, ratingInt));
+		}
+
+		try {
+			// Esta linea se refiere a coger de nuestra BD los ratings
+			Set<PatentePatenteRating> set = ratings2;
+
+			ItemRecommender irec = Utils.getRecommender(set);
+			List<Recomendation> recomendations = new ArrayList<Recomendation>();
+			// Exportar los datos a una coleccion nueva
+			recomendations = Utils.saveModel(irec, set);
+
+			// Guardamos las recomendaciones
+
+			Bson filter3 = new Document();
+			recomendationsBd.deleteMany(filter3);
+
+			List<Document> documentRecomendations = new ArrayList<Document>();
+			for (Recomendation rec : recomendations) {
+
+				Document docu = new Document().append("patent", rec.getPatent()).append("recomendations",
+						rec.getRecomendations());
+				documentRecomendations.add(docu);
+
+			}
+
+			System.out.println("------------------------------------------------------");
+			System.out.println("Insertamos las recomendaciones");
+			System.out.println("Tamaño de las recomendaciones: " + documentRecomendations.size());
+
+			recomendationsBd.insertMany(documentRecomendations);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (RecommenderBuildException e) {
+			e.printStackTrace();
+		}
+
+		client.close();
+
+	}
+	
+	 public static <T> Set<T> difference(Set<T> setA, Set<T> setB) {
+		    Set<T> tmp = new TreeSet<T>(setA);
+		    tmp.removeAll(setB);
+		    return tmp;
+		  }
 	
 
 }

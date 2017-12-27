@@ -48,6 +48,8 @@ public class TestFlinkKafkaConsumer {
 		*/
 		
 		stream.filter(x->Utils.esValido(x)).map(x->Utils.createTweetDTO(x)).map(x->Utils.insertaBD(x)).print();
+		
+		
 		// execute program
 		env.execute("Twitter Streaming Consumer");
 	}

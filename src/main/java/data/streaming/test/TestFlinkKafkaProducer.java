@@ -76,15 +76,18 @@ public class TestFlinkKafkaProducer {
 		   
 		        //Generamos un array con los keywords
 		        System.out.println("Numero de tags a buscar: "+ tags.size());      
-		        String[] tagNames = new String[tags.size()];
+		        //String[] tagNames = new String[tags.size()];
+		        String[] tagNames = new String[101];
 		        int contador = 0;
 		        for(String s:tags) {
+		        	
+		        	if(contador <= 100) {
 		        	System.out.println("Tags a buscar Producer: "+s);
 		        	tagNames[contador] = s;
 		        	contador = contador + 1;
+		        	}
 		        }
 		        
-		       
 		  
 		// Establecemos el filtro
 		twitterSource.setCustomEndpointInitializer(new ValidTagsTweetEndpoIntinitializer(tagNames));
