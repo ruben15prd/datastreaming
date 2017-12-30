@@ -3,20 +3,27 @@ package data.streaming.utils;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.apache.flink.shaded.com.google.common.collect.Maps;
+import org.apache.sling.commons.json.JSONArray;
+import org.apache.sling.commons.json.JSONException;
+import org.apache.sling.commons.json.JSONObject;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.grouplens.lenskit.ItemRecommender;
@@ -40,6 +47,7 @@ import com.mongodb.client.MongoDatabase;
 
 import data.streaming.dto.KeywordDTO;
 import data.streaming.dto.KeywordFecha;
+import data.streaming.dto.Patent;
 import data.streaming.dto.PatentePatenteRating;
 import data.streaming.dto.Recomendation;
 import data.streaming.dto.TweetDTO;
@@ -287,6 +295,129 @@ public class Utils {
 			e.printStackTrace();
 		}
 
+		client.close();
+
+	}
+	
+	
+	public static void vistasOptimizadas() {
+		
+		
+		String url = "https://si1718-rrv-patents.herokuapp.com/api/v1/patents/";
+		
+		List<Patent> patents = new ArrayList<Patent>();
+		List<Integer> years = new ArrayList<Integer>();
+		List<String> consecutiveYears = new ArrayList<String>();
+		List<Integer> patentsValuePerYear = new ArrayList<Integer>();
+
+		try {
+			URL urla = new URL(url);
+			 
+		    // read from the URL
+		    Scanner scan = new Scanner(urla.openStream());
+		    String str = new String();
+		    while (scan.hasNext())
+		        str += scan.nextLine();
+		    scan.close();
+		 
+		    JSONArray jsonarray = new JSONArray(str);
+		    for (int i = 0; i < jsonarray.length(); i++) {
+		        JSONObject jsonobject = jsonarray.getJSONObject(i);
+		        String title = jsonobject.getString("title");
+		        String date = jsonobject.getString("date");
+		        String idPatent = jsonobject.getString("idPatent");
+		        
+		        Patent patent = new Patent(title,date,idPatent);
+		        patents.add(patent);
+		        
+		    }
+			
+		    // Recorremos las patentes para sacar los años    
+            for(Patent p: patents) {
+                
+                    String year = p.getDate().split("-")[0];
+                    Integer yearNumber = new Integer(year);
+                    years.add(yearNumber);
+            }
+		    
+         // Ordenamos el array para coger el minimo y maximo
+            Collections.sort(years);
+            
+            Integer startYear= years.get(0);
+            Integer finishYear = years.get(years.size()-1);
+            
+            
+            
+            //Generamos los años que queremos que tenga nuestro diagrama de barras
+            for(Integer i = startYear ;i <= finishYear; i++) {
+                
+                consecutiveYears.add(String.valueOf(i));
+            }
+            
+          //Generamos el numero de patentes para cada año
+            
+            Integer numPatentsPerYear = 0;
+            
+            Integer cont = startYear;
+            
+            while (cont <= finishYear) {
+                
+                for(Patent p: patents) {
+                    String year = p.getDate().split("-")[0];
+                    Integer yearNumber =  new Integer(year);
+                    if(cont.equals(yearNumber)){
+                        numPatentsPerYear = numPatentsPerYear +1;
+                    }
+                }
+                patentsValuePerYear.add(numPatentsPerYear);
+                numPatentsPerYear = 0;
+                cont++;
+                
+            }
+            
+            
+            
+         
+		    
+		    
+		    
+			
+			
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
+		
+
+		// Creating a Mongo client
+		MongoClientURI uri = new MongoClientURI("mongodb://rrv:rrv@ds255455.mlab.com:55455/si1718-rrv-patents");
+
+		MongoClient client = new MongoClient(uri);
+
+		MongoDatabase db = client.getDatabase(uri.getDatabase());
+
+		MongoCollection<Document> optimizedViews = db.getCollection("optimizedViews");
+
+		// Borramos el contenido
+		Bson filter = new Document();
+		optimizedViews.deleteMany(filter);
+		
+		Document doc = new Document().append("consecutiveYears", consecutiveYears).append("patentsValuePerYear", patentsValuePerYear);
+		
+		System.out.println("------------------------------------------------------");
+		System.out.println("Insertamos la optmizacion de vistas");
+		optimizedViews.insertOne(doc);
+		
+		
 		client.close();
 
 	}

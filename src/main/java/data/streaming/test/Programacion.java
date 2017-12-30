@@ -2,7 +2,6 @@ package data.streaming.test;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,8 +14,6 @@ import java.util.concurrent.ScheduledFuture;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.grouplens.lenskit.ItemRecommender;
-import org.grouplens.lenskit.RecommenderBuildException;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
@@ -26,7 +23,6 @@ import com.mongodb.client.MongoDatabase;
 
 import data.streaming.dto.KeywordFecha;
 import data.streaming.dto.PatentePatenteRating;
-import data.streaming.dto.Recomendation;
 import data.streaming.utils.Utils;
 
 public class Programacion {
@@ -314,10 +310,16 @@ public class Programacion {
 				Utils.sistemaRecomendacion();
 				
 				
-				
 				//Diferencia entre patentes viejas y nuevas
 				
 				//Utils.interseccionPatentes();
+				
+				//Vistas optimizadas
+				
+				Utils.vistasOptimizadas();
+				
+				
+				
 				
 				
 			}

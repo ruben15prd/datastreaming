@@ -42,12 +42,12 @@ public class TestFlinkKafkaConsumer {
 		stream.timeWindowAll(Time.seconds(10)).apply(function).map(x->Utils.createTweetDTO(x)).print();
 		*/
 		
-		/*
-		AllWindowFunction<String,String,TimeWindow> function = new AllWindowFunctionImpl();
-		stream.timeWindowAll(Time.seconds(10)).apply(function).map(x->Utils.createTweetDTO(x)).map(x->Utils.insertaBD(x)).print();
-		*/
 		
-		stream.filter(x->Utils.esValido(x)).map(x->Utils.createTweetDTO(x)).map(x->Utils.insertaBD(x)).print();
+		AllWindowFunction<String,String,TimeWindow> function = new AllWindowFunctionImpl();
+		stream.timeWindowAll(Time.seconds(60)).apply(function).map(x->Utils.createTweetDTO(x)).map(x->Utils.insertaBD(x)).print();
+		
+		
+		//stream.filter(x->Utils.esValido(x)).map(x->Utils.createTweetDTO(x)).map(x->Utils.insertaBD(x)).print();
 		
 		
 		// execute program
