@@ -302,6 +302,8 @@ public class Utils {
 	
 	public static void vistasOptimizadas() {
 		
+		 // Primer grafico
+		
 		
 		String url = "https://si1718-rrv-patents.herokuapp.com/api/v1/patents/";
 		
@@ -309,7 +311,9 @@ public class Utils {
 		List<Integer> years = new ArrayList<Integer>();
 		List<String> consecutiveYears = new ArrayList<String>();
 		List<Integer> patentsValuePerYear = new ArrayList<Integer>();
-
+		
+		List<String> idGroups = new ArrayList<String>();
+        List<Integer> numInventorsPerGroup = new ArrayList<Integer>();
 		try {
 			URL urla = new URL(url);
 			 
@@ -375,10 +379,32 @@ public class Utils {
                 
             }
             
+            // Segundo grafico
             
+            String url2 = "https://si1718-rgg-groups.herokuapp.com/api/v1/groups";
             
-         
-		    
+           
+            
+            URL urlb = new URL(url2);
+			 
+		    // read from the URL
+		    Scanner scan2 = new Scanner(urlb.openStream());
+		    String str2 = new String();
+		    while (scan2.hasNext())
+		        str2 += scan2.nextLine();
+		    scan2.close();
+		 
+		    JSONArray jsonarray2 = new JSONArray(str2);
+		    for (int i = 0; i < jsonarray2.length(); i++) {
+		        JSONObject jsonobject2 = jsonarray2.getJSONObject(i);
+		        String idGroup = jsonobject2.getString("idGroup");
+		        JSONArray components = jsonobject2.getJSONArray("components");
+		        Integer size = components.length();
+		        
+		        idGroups.add(idGroup);
+		        numInventorsPerGroup.add(size);
+		        
+		    }
 		    
 		    
 			
@@ -411,7 +437,7 @@ public class Utils {
 		Bson filter = new Document();
 		optimizedViews.deleteMany(filter);
 		
-		Document doc = new Document().append("consecutiveYears", consecutiveYears).append("patentsValuePerYear", patentsValuePerYear);
+		Document doc = new Document().append("consecutiveYears", consecutiveYears).append("patentsValuePerYear", patentsValuePerYear).append("idGroups", idGroups).append("numInventorsPerGroup", numInventorsPerGroup);
 		
 		System.out.println("------------------------------------------------------");
 		System.out.println("Insertamos la optmizacion de vistas");

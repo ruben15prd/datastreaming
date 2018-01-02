@@ -7,6 +7,7 @@ D:\Descargas\siworkspace\DataStreamingAlumnos\src\main\java\data\streaming\utils
 D:\Descargas\siworkspace\DataStreamingAlumnos\src\main\java\data\streaming\dto\PatentePatenteRating.java
 D:\Descargas\siworkspace\DataStreamingAlumnos\src\main\java\data\streaming\test\TestFlinkKafkaProducer.java
 D:\Descargas\siworkspace\DataStreamingAlumnos\src\main\java\data\streaming\utils\LoggingFactory.java
+D:\Descargas\siworkspace\DataStreamingAlumnos\src\main\java\data\streaming\dto\Recomendation.java
 D:\Descargas\siworkspace\DataStreamingAlumnos\src\main\java\data\streaming\dto\Patent.java
 D:\Descargas\siworkspace\DataStreamingAlumnos\src\main\java\data\streaming\test\TestFlinkKafkaConsumer.java
 D:\Descargas\siworkspace\DataStreamingAlumnos\src\main\java\data\streaming\dto\KeywordFecha.java

@@ -116,6 +116,7 @@ public class Programacion {
 
 						for (Document docu : tweetsDocuments) {
 							String fechaCreacionTweetFormateada = Utils.parseaFecha(docu.getString("creationDate"));
+							
 							if (fechaCreacionTweetFormateada.equals(fechaFormateada)) {
 								numTweets = numTweets + 1;
 							}
