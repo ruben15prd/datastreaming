@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -35,6 +36,9 @@ public class Programacion {
 				System.out.println("beep");
 
 				Map<KeywordFecha, Integer> map = new HashMap<KeywordFecha, Integer>();
+				Map<KeywordFecha, Integer> mapAntiguo = new HashMap<KeywordFecha, Integer>();
+				
+				
 
 				// Creating a Mongo client
 				MongoClientURI uri = new MongoClientURI("mongodb://rrv:rrv@ds255455.mlab.com:55455/si1718-rrv-patents");
@@ -142,20 +146,16 @@ public class Programacion {
 
 				client.close();
 
-				List<Document> documents = new ArrayList<>();
-				List<Document> updatedBatch = new ArrayList<>();
+				List<Document> updatedBatch = new ArrayList<Document>();
+				
 				/*
 				 * // Cogemos la fecha actual Date date = Calendar.getInstance().getTime();
 				 * 
 				 * // Display a date in day, month, year format DateFormat formatter = new
 				 * SimpleDateFormat("dd/MM/yyyy"); String today = formatter.format(date);
 				 */
-				for (Map.Entry<KeywordFecha, Integer> entry : map.entrySet()) {
-
-					Document docu = new Document().append("keyword", entry.getKey().getKeyword())
-							.append("date", entry.getKey().getFecha()).append("numTweets", entry.getValue());
-					documents.add(docu);
-				}
+				
+				
 				// Guardamos en la BD
 
 				client = new MongoClient(uri);
@@ -164,6 +164,7 @@ public class Programacion {
 
 				MongoCollection<Document> batch = db.getCollection("batch");
 				
+				
 				tweets = db.getCollection("tweets");
 
 				
@@ -171,52 +172,51 @@ public class Programacion {
 				
 				//Actualizamos el contenido del batch
 				
-				
-				
 				List<Document> batchDocuments = (List<Document>) batch.find()
 						.into(new ArrayList<Document>());
 				
+			
+				//Metemos el batch antiguo en un map
+				for (Document d : batchDocuments) {
+					String keyword = d.getString("keyword");
+					String fechaCreacion = d.getString("creationDate");
+					Integer numTweets = d.getInteger("numTweets");
+					KeywordFecha kf = new KeywordFecha(keyword, fechaCreacion);	
+					mapAntiguo.put(kf, numTweets);
+				}
 				
-				
-				
-				for (Document doc : batchDocuments) {
+				//Recorremos los nuevos
+				for (Entry<KeywordFecha, Integer> entry : map.entrySet()){
 					
-					String kw = (String) doc.get("keyword");
-					String dt =  (String) doc.get("date");
+					Integer numTweetsNuevos = entry.getValue();
 					
-					Boolean existe = false;
-					
-					for(Document dc: documents) {
-						String kwDc = (String) dc.get("keyword");
-						String dtDc =  (String) dc.get("date");
+					if(mapAntiguo.containsKey(entry.getKey())){
+					    // if the key has already been used,
+					    // we'll just grab the array list and add the value to it
+						Integer numTweetsAntiguos = mapAntiguo.get(entry.getKey());
 						
-						if(kw == kwDc && dt == dtDc) {
-							Integer numTweetsDoc = (Integer) doc.get("numTweets");
-							Integer numTweetsDc = (Integer) dc.get("numTweets");
-							updatedBatch.add(new Document().append("keyword", kw).append("date", dt).append("numTweets", numTweetsDoc + numTweetsDc));
-							existe = true;
-							
-						}
+						mapAntiguo.put(entry.getKey(), numTweetsAntiguos + numTweetsNuevos);
+					} else {
+					    // if the key hasn't been used yet,
+					    // we'll create a new ArrayList<String> object, add the value
+					    // and put it in the array list with the new key
 						
+					    mapAntiguo.put(entry.getKey(), numTweetsNuevos);
 					}
 					
-					if(existe == false) {
-						Integer numTweetsDoc = (Integer) doc.get("numTweets");
-						updatedBatch.add(new Document().append("keyword", kw).append("date", dt).append("numTweets", numTweetsDoc));
-					}
 					
 					
 					
+				}
+				
+				for (Map.Entry<KeywordFecha, Integer> entry : mapAntiguo.entrySet()) {
 
-				}	
+					Document docu = new Document().append("keyword", entry.getKey().getKeyword())
+							.append("date", entry.getKey().getFecha()).append("numTweets", entry.getValue());
+					updatedBatch.add(docu);
+				}
 				
-				
-				
-				
-				
-				
-				
-				
+			
 				
 				
 				
