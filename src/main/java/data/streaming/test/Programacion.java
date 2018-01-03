@@ -326,7 +326,7 @@ public class Programacion {
 			}
 		
 		};
-		final ScheduledFuture<?> beeperHandle = scheduler.scheduleAtFixedRate(beeper, 10, 10, SECONDS);
+		final ScheduledFuture<?> beeperHandle = scheduler.scheduleAtFixedRate(beeper, 10, 60*60*2, SECONDS);
 		/*
 		 * scheduler.schedule(new Runnable() { public void run() {
 		 * beeperHandle.cancel(true); } }, 999999999 * 99999999, SECONDS);
