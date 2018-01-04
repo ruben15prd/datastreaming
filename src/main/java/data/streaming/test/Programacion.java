@@ -94,19 +94,32 @@ public class Programacion {
 
 				System.out.println("Nos traemos los tweets");
 
+				
+				List<Document> tweetsDocuments = (List<Document>) tweets.find().into(new ArrayList<Document>());
+				
+				List<Document> tweetsContainsKeyword = new ArrayList<Document>();
+				
 				Integer contador2 = 0;
 				for (String s : tagNames) {
 					// System.out.println("Tags actual: " + s);
-					BasicDBObject regexQuery = new BasicDBObject();
-					regexQuery.put("text", new BasicDBObject("$regex", s).append("$options", "i"));
-
-					List<Document> tweetsDocuments = (List<Document>) tweets.find(regexQuery)
-							.into(new ArrayList<Document>());
+					//BasicDBObject regexQuery = new BasicDBObject();
+					//regexQuery.put("text", new BasicDBObject("$regex", s).append("$options", "i"));
+					
+					for (Document d : tweetsDocuments) {
+						
+						if(d.getString("text").toLowerCase().contains(s.toLowerCase())) {
+							tweetsContainsKeyword.add(d);
+						}
+						
+						
+					}
+					
+					//List<Document> tweetsDocuments = (List<Document>) tweets.find(regexQuery).into(new ArrayList<Document>());
 
 					List<String> creationDates = new ArrayList<String>();
 
 					// Cogemos las fechas de todos los tweets
-					for (Document doc : tweetsDocuments) {
+					for (Document doc : tweetsContainsKeyword) {
 						String fechaCreacion = doc.getString("creationDate");
 						creationDates.add(fechaCreacion);
 
@@ -118,7 +131,7 @@ public class Programacion {
 						String fechaFormateada = Utils.parseaFecha(fecha);
 						// System.out.println("Fecha actual: " + fechaFormateada);
 
-						for (Document docu : tweetsDocuments) {
+						for (Document docu : tweetsContainsKeyword) {
 							String fechaCreacionTweetFormateada = Utils.parseaFecha(docu.getString("creationDate"));
 							
 							if (fechaCreacionTweetFormateada.equals(fechaFormateada)) {
@@ -133,6 +146,7 @@ public class Programacion {
 						// we'll create a new ArrayList<String> object, add the value
 						// and put it in the array list with the new key
 						map.put(kf, numTweets);
+						tweetsContainsKeyword.clear();
 
 					}
 
@@ -179,7 +193,7 @@ public class Programacion {
 				//Metemos el batch antiguo en un map
 				for (Document d : batchDocuments) {
 					String keyword = d.getString("keyword");
-					String fechaCreacion = d.getString("creationDate");
+					String fechaCreacion = d.getString("date");
 					Integer numTweets = d.getInteger("numTweets");
 					KeywordFecha kf = new KeywordFecha(keyword, fechaCreacion);	
 					mapAntiguo.put(kf, numTweets);
@@ -311,13 +325,13 @@ public class Programacion {
 				Utils.sistemaRecomendacion();
 				
 				
-				//Diferencia entre patentes viejas y nuevas
-				
-				//Utils.interseccionPatentes();
-				
 				//Vistas optimizadas
 				
 				Utils.vistasOptimizadas();
+				
+				//Diferencia entre patentes viejas y nuevas
+				
+				Utils.interseccionPatentes();
 				
 				
 				

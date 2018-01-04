@@ -48,6 +48,7 @@ import com.mongodb.client.MongoDatabase;
 import data.streaming.dto.KeywordDTO;
 import data.streaming.dto.KeywordFecha;
 import data.streaming.dto.Patent;
+import data.streaming.dto.PatentFull;
 import data.streaming.dto.PatentePatenteRating;
 import data.streaming.dto.Recomendation;
 import data.streaming.dto.TweetDTO;
@@ -211,17 +212,57 @@ public class Utils {
 		
 		Set<Document> pats = (Set<Document>) patents.find().into(new HashSet<Document>());
 		
-		Set<Document> newPatents = new HashSet<Document>();
+		
+		Set<PatentFull> patsAuxSet = new HashSet<PatentFull>();
+		Set<PatentFull> patsSet = new HashSet<PatentFull>();
+		
+		Set<PatentFull> newPatents = new HashSet<PatentFull>();
 		List<Document> listNewPatents = new ArrayList<Document>();
 		
 		
+		for(Document d: patsAux) {
+			String idPatent = (String) d.get("idPatent");
+			String title = (String) d.get("title");
+			String date = (String) d.get("date");
+			List<String> inventors = (List<String>) d.get("inventors");
+			List<String> keywords = (List<String>) d.get("keywords");
+			
+			PatentFull ptf = new PatentFull(title,date,idPatent,inventors,keywords);
+			
+			patsAuxSet.add(ptf);
+			
+		}
+		
+		for(Document d: pats) {
+			String idPatent = (String) d.get("idPatent");
+			String title = (String) d.get("title");
+			String date = (String) d.get("date");
+			List<String> inventors = (List<String>) d.get("inventors");
+			List<String> keywords = (List<String>) d.get("keywords");
+			
+			PatentFull ptf = new PatentFull(title,date,idPatent,inventors,keywords);
+			
+			patsSet.add(ptf);
+			
+		}
+		
+		newPatents = Utils.difference(patsAuxSet, patsSet);
 		
 		
-		newPatents = Utils.difference(patsAux, pats);
+		for(PatentFull ptf: newPatents) {
+			String idPatent = ptf.getIdPatent();
+			String title = ptf.getTitle();
+			String date = ptf.getDate();
+			List<String> inventors = ptf.getInventors();
+			List<String> keywords = ptf.getKeywords();
+			
+			Document docu = new Document().append("idPatent",idPatent).append("title",title).append("date",date).append("inventors",inventors).append("keywords",keywords);
+			
+			listNewPatents.add(docu);
+			
+		}
 		
 		
-		
-		listNewPatents.addAll(newPatents);
 		
 		Bson filter4 = new Document();
 		patentsAux.deleteMany(filter4);
@@ -229,7 +270,6 @@ public class Utils {
 		System.out.println("Hacemos la diferencia de las patentes");
 
 		patentsAux.insertMany(listNewPatents);
-		System.out.println("Hecho");
 		client.close();
 
 	}
@@ -442,7 +482,6 @@ public class Utils {
 		System.out.println("------------------------------------------------------");
 		System.out.println("Insertamos la optmizacion de vistas");
 		optimizedViews.insertOne(doc);
-		
 		
 		client.close();
 
