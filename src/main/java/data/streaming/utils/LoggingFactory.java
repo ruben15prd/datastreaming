@@ -44,6 +44,7 @@ public class LoggingFactory {
 		result.put("sasl.mechanism", "SCRAM-SHA-256");
 		result.put("sasl.jaas.config", jaasCfg);
 		
+		
 		result.put("CLOUDKARAFKA_TOPIC", props.get("CLOUDKARAFKA_TOPIC"));
 		
 		return result;

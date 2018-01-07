@@ -425,13 +425,14 @@ public class Utils {
 				
 			}
 			
+			System.out.println("Keyword: "+s +"- Numero de tweets que contienen el keyword: "+tweetsContainsKeyword.size());
 			//List<Document> tweetsDocuments = (List<Document>) tweets.find(regexQuery).into(new ArrayList<Document>());
 
-			List<String> creationDates = new ArrayList<String>();
+			Set<String> creationDates = new HashSet<String>();
 
 			// Cogemos las fechas de todos los tweets
 			for (Document doc : tweetsContainsKeyword) {
-				String fechaCreacion = doc.getString("creationDate");
+				String fechaCreacion = Utils.parseaFecha(doc.getString("creationDate"));
 				creationDates.add(fechaCreacion);
 
 			}
@@ -439,20 +440,22 @@ public class Utils {
 			for (String fecha : creationDates) {
 				Integer numTweets = 0;
 
-				String fechaFormateada = Utils.parseaFecha(fecha);
+				String fechaFormateada = fecha;
 				// System.out.println("Fecha actual: " + fechaFormateada);
 
 				for (Document docu : tweetsContainsKeyword) {
 					String fechaCreacionTweetFormateada = Utils.parseaFecha(docu.getString("creationDate"));
-					
+					System.out.println("Fecha que estoy mirando: " + fechaFormateada +" Fecha del tweet: " + fechaCreacionTweetFormateada);
 					if (fechaCreacionTweetFormateada.equals(fechaFormateada)) {
 						numTweets = numTweets + 1;
+						System.out.println("Num tweets: " + numTweets);
 					}
 
 				}
 
 				KeywordFecha kf = new KeywordFecha(s, fechaFormateada);
-
+				
+				System.out.println("KeywordFecha que voy a añadir: " +kf.toString() + "NumTweets: " +numTweets);
 				// if the key hasn't been used yet,
 				// we'll create a new ArrayList<String> object, add the value
 				// and put it in the array list with the new key
